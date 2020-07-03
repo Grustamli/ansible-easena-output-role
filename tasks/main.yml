@@ -1,0 +1,76 @@
+- name: Make sure ez directory exists
+  file:
+    path: "{{ EZ_DEST_DIRNAME }}"
+    state: directory
+
+- name: Render the {{ ez_src_file }} template and copy the file to remote host
+  template:
+    src: "{{ ez_src_file }}"
+    dest: "{{ ez_dest_path }}"
+  when: EZ_FILE == ""
+
+- name: Copy the {{ ez_src_file }} to remote host
+  copy:
+    src: "{{ ez_src_file }}"
+    dest: "{{ ez_dest_path }}"
+  when: EZ_FILE != ""
+
+- name: Run easena
+  shell:
+    cmd: "easena {{ ez_dest_file }} -cuda"
+    chdir: "{{ EZ_DEST_DIRNAME }}"
+  environment:
+    EZ_PATH: "{{ EZ_PATH }}"
+    PATH: "{{ ansible_env.PATH }}:{{ EZ_PATH }}/bin"
+
+
+- name: Run make
+  make: 
+    chdir: "{{ EZ_DEST_DIRNAME }}"
+  environment:
+    EZ_PATH: "{{ EZ_PATH }}"
+    PATH: "{{ ansible_env.PATH }}:{{ EZ_PATH }}/bin"
+
+- name: Run generated file
+  shell:
+    cmd: "./{{ ez_dest_filename | quote }} > {{ EZ_OUTPUT_FILE | quote }}"
+    chdir: "{{ EZ_DEST_DIRNAME }}"
+
+- name: Create local fetch directory
+  delegate_to: localhost
+  run_once: true
+  file:
+    path: "{{ fetch_dir }}"
+    state: directory
+
+- name: Fetch output files
+  fetch:
+    dest: "{{ fetch_path }}"
+    src: "{{ EZ_OUTPUT_PATH }}"
+    flat: yes
+
+- name: Fetch .ez file into the output folder
+  run_once: true
+  fetch:
+    src: "{{ ez_dest_path }}"
+    dest: "{{ fetch_dir }}/"
+    flat: yes
+
+- name: Clean compilation
+  make:
+    chdir: "{{ EZ_DEST_DIRNAME }}"
+    target: easeaclean
+  when: CLEAN_COMPILATION == true and DELETE_EZ_DIRECTORY == false
+
+- name: Delete .ez file
+  file:
+    path: "{{ ez_dest_path }}"
+    state: absent
+  when: DELETE_EZ_FILE == true and DELETE_EZ_DIRECTORY == false
+
+- name: Clean the working directory
+  file:
+    path: "{{ EZ_DEST_DIRNAME }}"
+    state: absent
+  when: DELETE_EZ_DIRECTORY == true
+

@@ -1,0 +1,63 @@
+# User declarations defaults
+nACC_MULT: "{{ (1024 * 1024) }}"
+NB_SIN: 2
+MIN_AMP: 68100.0
+MAX_AMP: 100000.0
+MIN_FREQ: "{{ 0.2688 * nACC_MULT|float }}" 
+MAX_FREQ: "{{ 0.2691 * nACC_MULT|float }}"
+MIN_PH: 3.34
+MAX_PH: 4.49
+NB_SAMPLES: 4096
+
+# Run parameters defaults
+NB_GEN: 2000
+TIME_LIMIT: 0
+POPULATION_SIZE: 131072
+OFFSPRING_SIZE: 100%
+MUT_PROB: 1
+XOVER_PROB: 1
+EVAL_GOAL: minimise
+SELECTION_OPERATOR: Tournament 10
+SURVIVING_PARENTS: 100%
+SURVIVING_OFFSPRING: 100%
+REDUCE_PARENTS_OPERATOR: Tournament 2
+REDUCE_OFFSPRING_OPERATOR: Tournament 2
+FINAL_REDUCE_OPERATOR: Tournament 7
+ELITISM: weak
+ELITE: 1
+PRINT_STATS: true
+GEN_CSV_STATS_FILE: false
+GEN_GNUPLOT_SCRIPT: false
+GEN_R_SCRIPT: false
+PLOT_STATS: true
+REMOTE_ISLAND_MODEL: false
+IP_FILE: ip.txt
+SERVER_PORT: 2929
+MIGRATION_PROB: .333
+SAVE_POPULATION: false
+START_FROM_FILE: false
+
+
+# Ansible task variables
+EZ_TEMPLATE: sinus_it.ez.j2
+EZ_FILE: 'sample.ez'
+EZ_DEST_FILENAME: ''
+EZ_DEST_DIRNAME: sinus_it
+EZ_OUTPUT_FILE: output.log
+EZ_OUTPUT_PATH: "{{ EZ_DEST_DIRNAME }}/{{ EZ_OUTPUT_FILE }}"
+EZ_PATH: /usr/local/easena/
+DELETE_EZ_DIRECTORY: true
+CLEAN_COMPILATION: false
+DELETE_EZ_FILE: false
+
+# derived variables. Do not override
+ez_src_file: "{{ EZ_FILE | default(EZ_TEMPLATE, true) }}"
+ez_dest_filename: "{{ EZ_DEST_FILENAME | default(ez_src_file|basename|replace('.ez', ''), true) }}"
+ez_dest_file: "{{ ez_dest_filename }}.ez"
+ez_dest_path: "{{ EZ_DEST_DIRNAME }}/{{ ez_dest_file }}"
+fetch_dir: "output/{{ lookup('pipe', 'date +%y%m%d%H%M') }}_{{ ez_dest_filename }}"
+fetch_filename: "{{ ansible_hostname }}.txt"
+fetch_path: "{{ fetch_dir }}/{{ fetch_filename }}"
+
+
+
