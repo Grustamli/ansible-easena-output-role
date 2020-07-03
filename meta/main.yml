@@ -1,0 +1,6 @@
+galaxy_info:
+  role_name: easena-output
+  author: Gadir Rustamli
+  description: Tasks to automate fetching easena generation output using cuda
+
+  min_ansible_version: 2.4
