@@ -1,0 +1,1 @@
+# ansible-easena-output-role
