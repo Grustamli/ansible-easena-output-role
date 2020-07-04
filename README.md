@@ -56,10 +56,11 @@ These variables control the behaviour of the steps descriped in the begginning o
 - `EZ_TEMPLATE`: Path to the Jinja2 template file that renders **User declarations** and **Run parameters** variables. Do not change this value unless you know how to create .ez Jinja2 template. Default is **sinus_it.ez.j2**
 - `EZ_FILE`: Path to an .ez file which contains further modifications apart from the variables. This variable will override `EZ_TEMPLATE`. Default is empty **''**.
 - `EZ_DEST_FILENAME`: File basename that will be used to save the .ez file as in the remote host. If not specified basename of `EZ_TEMPLATE` or `EZ_FILE` will be used. Default is empty **''**. Do not include **.ez** extension. Example: **sinus_it_test**. File will be save to the remote host as **sinus_it_test.ez**
-- `EZ_DEST_DIRNAME`: Created directory name in the remote host which will contain .ez file and compilations. Default is **sinus_it**
+- `EZ_DEST_DIRECTORY`: Created directory name in the remote host which will contain .ez file and compilations. Default is **<random uuid>_<EZ_DEST_FILENAME>**
 - `EZ_OUTPUT_FILE`: Name of the file that easena generation output will be written to. Default is **output.log**
 - `DELETE_EZ_DIRECTORY`: Deletes the easena directory after all outputs are copied to localhost. Default is **true**. Change it to false to prevent deletion
 - `CLEAN_COMPILATION`: Runs `make easenaclean` after copying all outputs to localhost. Default is **false**. Don't need to set it to `true` if `DELETE_EZ_DIRECTORY` is set to `true`
 - `DELETE_EZ_FILE`: Deletes .ez file on the remote host after copying all outputs to localhost. Default is **false**. Don't need to set it to `true` if `DELETE_EZ_DIRECTORY` is set to `true`
+- `RUN_LOG_FILE`: Path to the log file which contains timestamp, destination directory, destination .ez file, status and local output directory. Default is **run.log**
 
 **Note**. Stick to editing EZ variables if **\User declarations** and **\Run parameters** are only things to be changed. Specify `EZ_FILE` if an .ez file includes more changes apart from the variables.
