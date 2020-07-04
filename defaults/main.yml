@@ -42,22 +42,22 @@ START_FROM_FILE: false
 EZ_TEMPLATE: sinus_it.ez.j2
 EZ_FILE: ''
 EZ_DEST_FILENAME: ''
-EZ_DEST_DIRNAME: sinus_it
+EZ_DEST_DIRECTORY: ''
 EZ_OUTPUT_FILE: output.log
-EZ_OUTPUT_PATH: "{{ EZ_DEST_DIRNAME }}/{{ EZ_OUTPUT_FILE }}"
-EZ_PATH: /usr/local/easena/
 DELETE_EZ_DIRECTORY: true
 CLEAN_COMPILATION: false
 DELETE_EZ_FILE: false
+RUN_LOG_FILE: run.log
+
+# Env variables
+EZ_PATH: /usr/local/easena/
 
 # derived variables. Do not override
 ez_src_file: "{{ EZ_FILE | default(EZ_TEMPLATE, true) }}"
-ez_dest_filename: "{{ EZ_DEST_FILENAME | default(ez_src_file|basename|replace('.ez', ''), true) }}"
+ez_dest_filename: "{{ EZ_DEST_FILENAME | default(ez_src_file|basename|replace('.ez', '')|replace('.j2', ''), true) }}"
 ez_dest_file: "{{ ez_dest_filename }}.ez"
-ez_dest_path: "{{ EZ_DEST_DIRNAME }}/{{ ez_dest_file }}"
-fetch_dir: "output/{{ lookup('pipe', 'date +%y%m%d%H%M') }}_{{ ez_dest_filename }}"
-fetch_filename: "{{ ansible_hostname }}.txt"
 fetch_path: "{{ fetch_dir }}/{{ fetch_filename }}"
-
-
-
+ez_dest_dir: "{{ EZ_DEST_DIRECTORY | default('') }}"
+ez_dest_file_path: "{{ ez_dest_dir }}/{{ ez_dest_file }}"
+fetch_dir: "output/{{ lookup('pipe', 'date +%y%m%d%H%M') }}_{{ ez_dest_dir }}"
+fetch_filename: "{{ ansible_hostname }}.txt"

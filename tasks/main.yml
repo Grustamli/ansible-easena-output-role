@@ -1,40 +1,79 @@
+- run_once: true
+  block:
+  - name: Create unique destination directory prefix
+    delegate_to: localhost
+    command: uuidgen
+    register: uuid_result
+  - name: 
+    set_fact:
+      ez_dest_dir: "{{ uuid_result.stdout }}_{{ ez_dest_filename }}"
+  when: ez_dest_dir is undefined or ez_dest_dir == ''
+
+- name: Ensure run log file exists on localhost
+  delegate_to: localhost
+  run_once: true
+  block: 
+    - name: Check if run log file exists
+      stat: 
+        path: "{{ RUN_LOG_FILE }}"
+      register: run_log_file
+    - name: Create run log file
+      lineinfile:
+        path: "{{ RUN_LOG_FILE }}"
+        line: "TIMESTAMP | EZ_DEST_FOLDER | EZ_DEST_FILE | STATUS | LOCAL_OUTPUT_FOLDER"
+        create: yes
+      when: not run_log_file.stat.exists
+
+ 
+- name: Handle log line 
+  run_once: true
+  delegate_to: localhost
+  block:
+    - name: Set log line as variable
+      set_fact:
+        log_line: "{{ lookup('pipe', 'date \"+%Y-%m-%d %H:%M:%S\"') }} | {{ ez_dest_dir }} | {{ ez_dest_file }} | STARTED"
+    - name: Append log line
+      lineinfile:
+        path: "{{ RUN_LOG_FILE }}"
+        line: "{{ log_line }}"
+
+
 - name: Make sure ez directory exists
   file:
-    path: "{{ EZ_DEST_DIRNAME }}"
+    path: "{{ ez_dest_dir }}"
     state: directory
 
 - name: Render the {{ ez_src_file }} template and copy the file to remote host
   template:
     src: "{{ ez_src_file }}"
-    dest: "{{ ez_dest_path }}"
+    dest: "{{ ez_dest_file_path }}"
   when: EZ_FILE == ""
 
 - name: Copy the {{ ez_src_file }} to remote host
   copy:
     src: "{{ ez_src_file }}"
-    dest: "{{ ez_dest_path }}"
+    dest: "{{ ez_dest_file_path }}"
   when: EZ_FILE != ""
 
 - name: Run easena
-  shell:
-    cmd: "easena {{ ez_dest_file }} -cuda"
-    chdir: "{{ EZ_DEST_DIRNAME }}"
   environment:
     EZ_PATH: "{{ EZ_PATH }}"
     PATH: "{{ ansible_env.PATH }}:{{ EZ_PATH }}/bin"
-
-
-- name: Run make
-  make: 
-    chdir: "{{ EZ_DEST_DIRNAME }}"
-  environment:
-    EZ_PATH: "{{ EZ_PATH }}"
-    PATH: "{{ ansible_env.PATH }}:{{ EZ_PATH }}/bin"
-
-- name: Run generated file
-  shell:
-    cmd: "./{{ ez_dest_filename | quote }} > {{ EZ_OUTPUT_FILE | quote }}"
-    chdir: "{{ EZ_DEST_DIRNAME }}"
+  block:
+    - name: Run easena with .ez file
+      shell:
+        cmd: "easena {{ ez_dest_file }} -cuda"
+        chdir: "{{ ez_dest_dir }}"
+    - name: Run make
+      make: 
+        chdir: "{{ ez_dest_dir }}"
+    - name: Run generated file
+      shell:
+        cmd: "./{{ ez_dest_filename | quote }} > {{ EZ_OUTPUT_FILE | quote }}"
+        chdir: "{{ ez_dest_dir }}"
+  rescue:
+    - name: Stop host from further processing
+      meta: end_host
 
 - name: Create local fetch directory
   delegate_to: localhost
@@ -42,35 +81,43 @@
   file:
     path: "{{ fetch_dir }}"
     state: directory
+  register: local_fetch_dir
 
 - name: Fetch output files
   fetch:
-    dest: "{{ fetch_path }}"
-    src: "{{ EZ_OUTPUT_PATH }}"
+    dest: "{{ local_fetch_dir.path }}/{{ fetch_filename }}"
+    src: "{{ ez_dest_dir }}/{{ EZ_OUTPUT_FILE }}"
     flat: yes
 
 - name: Fetch .ez file into the output folder
   run_once: true
   fetch:
-    src: "{{ ez_dest_path }}"
-    dest: "{{ fetch_dir }}/"
+    src: "{{ ez_dest_file_path }}"
+    dest: "{{ local_fetch_dir.path }}/"
     flat: yes
 
 - name: Clean compilation
   make:
-    chdir: "{{ EZ_DEST_DIRNAME }}"
+    chdir: "{{ ez_dest_dir }}"
     target: easeaclean
   when: CLEAN_COMPILATION == true and DELETE_EZ_DIRECTORY == false
 
 - name: Delete .ez file
   file:
-    path: "{{ ez_dest_path }}"
+    path: "{{ ez_dest_file_path }}"
     state: absent
   when: DELETE_EZ_FILE == true and DELETE_EZ_DIRECTORY == false
 
 - name: Clean the working directory
   file:
-    path: "{{ EZ_DEST_DIRNAME }}"
+    path: "{{ ez_dest_dir }}"
     state: absent
   when: DELETE_EZ_DIRECTORY == true
 
+- name: Update log status
+  delegate_to: localhost
+  run_once: true
+  lineinfile: 
+    path: "{{ RUN_LOG_FILE }}"
+    regexp: "^{{ log_line }}"
+    line: "{{ log_line|replace('STARTED', 'FINISHED') }} | {{ local_fetch_dir.path }}"
