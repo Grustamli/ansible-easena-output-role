@@ -40,7 +40,7 @@ START_FROM_FILE: false
 
 # Ansible task variables
 EZ_TEMPLATE: sinus_it.ez.j2
-EZ_FILE: 'sample.ez'
+EZ_FILE: ''
 EZ_DEST_FILENAME: ''
 EZ_DEST_DIRNAME: sinus_it
 EZ_OUTPUT_FILE: output.log
