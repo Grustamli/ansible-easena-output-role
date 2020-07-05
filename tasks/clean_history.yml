@@ -8,3 +8,4 @@
       file:
         path: "{{ item }}"
         state: absent
+      loop: ez_dirst_to_clean
