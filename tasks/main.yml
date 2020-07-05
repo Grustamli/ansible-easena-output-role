@@ -123,5 +123,8 @@
     line: "{{ log_line|replace('STARTED', 'FINISHED') }} | {{ local_fetch_dir.path }}"
 
 
-- include_tasks: utils.yml
+- import_tasks: clean_history.yml
+  tags:
+    - never
+    - clean_history
 
