@@ -1,0 +1,17 @@
+    - name: Collect directories to clean 
+      run_once: yes
+      delegate_to: localhost
+      set_fact: 
+        ez_dirs_to_clean: "{{ lookup('pipe', 'awk -f scripts/test.awk run.log').split(' ') | list }}"
+      tags: 
+        - clean_history
+        - never
+
+
+    - name: Remove directories
+      file:
+        path: "{{ item }}"
+        state: absent
+      tags: 
+        - clean_history
+        - never
