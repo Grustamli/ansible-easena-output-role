@@ -1,11 +1,13 @@
     - name: Collect directories to clean 
       run_once: yes
       delegate_to: localhost
+      vars:
+        awk_script: "{{ role_path }}/files/ez_dirs.awk"
       set_fact: 
-        ez_dirs_to_clean: "{{ lookup('pipe', 'awk -f scripts/test.awk run.log').split(' ') | list }}"
+        ez_dirs_to_clean: "{{ lookup('pipe', 'awk -f ' + awk_script + ' ' + run_log_file).split(' ') | list }}"
 
     - name: Remove directories
       file:
         path: "{{ item }}"
         state: absent
-      loop: ez_dirst_to_clean
+      loop: "{{ ez_dirs_to_clean }}"

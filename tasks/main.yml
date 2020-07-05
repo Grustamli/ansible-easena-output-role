@@ -18,9 +18,18 @@
         path: "{{ RUN_LOG_FILE }}"
       register: run_log_file
     - name: Create run log file
+      vars: 
+        log_fields: 
+          - TIMESTAMP
+          - EZ_DEST_FOLDER
+          - EZ_DEST_FILE
+          - STATUS
+          - LOCAL_OUTPUT_FOLDER
+          - EZ_DIR_DELETED
       lineinfile:
         path: "{{ RUN_LOG_FILE }}"
-        line: "TIMESTAMP | EZ_DEST_FOLDER | EZ_DEST_FILE | STATUS | LOCAL_OUTPUT_FOLDER"
+        # line: "TIMESTAMP | EZ_DEST_FOLDER | EZ_DEST_FILE | STATUS | LOCAL_OUTPUT_FOLDER | "
+        line: "{{ ' | '.join(log_fields) }}"
         create: yes
       when: not run_log_file.stat.exists
 
@@ -30,8 +39,14 @@
   delegate_to: localhost
   block:
     - name: Set log line as variable
+      vars:
+        log_values:
+          - "{{ lookup('pipe', 'date \"+%Y-%m-%d %H:%M:%S\"') }}"
+          - "{{ ez_dest_dir }}"
+          - "{{ ez_dest_file }}"
+          - STARTED
       set_fact:
-        log_line: "{{ lookup('pipe', 'date \"+%Y-%m-%d %H:%M:%S\"') }} | {{ ez_dest_dir }} | {{ ez_dest_file }} | STARTED"
+        log_line: "{{ ' | '.join(log_values) }}"
     - name: Append log line
       lineinfile:
         path: "{{ RUN_LOG_FILE }}"
