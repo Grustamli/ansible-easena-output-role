@@ -1,0 +1,8 @@
+- name: Copy SSH key to remote host
+  ssh_copy_id:
+    hostname: "{{ item }}"
+    username: "{{ ansible_user }}"
+    password: "{{ ssh_password }}"
+    ssh_public_key: "{{ ssh_public_key }}"
+  with_inventory_hostnames:
+    - all
