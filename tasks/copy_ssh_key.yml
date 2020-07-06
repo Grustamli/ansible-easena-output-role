@@ -1,4 +1,5 @@
 - name: Copy SSH key to remote host
+  delegate_to: localhost
   ssh_copy_id:
     hostname: "{{ item }}"
     username: "{{ ansible_user }}"
