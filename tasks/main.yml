@@ -142,7 +142,3 @@
   tags:
     - never
     - clean_history
-
-
-- import_tasks: copy_ssh_key.yml
-  tags: [never, copy_ssh_key]
