@@ -49,8 +49,6 @@ CLEAN_COMPILATION: false
 DELETE_EZ_FILE: false
 RUN_LOG_FILE: run.log
 
-ssh_public_key: "{{ ansible_env.HOME }}/.ssh/id_rsa.pub"
-
 # Env variables
 EZ_PATH: /usr/local/easena/
 
