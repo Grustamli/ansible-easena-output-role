@@ -52,7 +52,6 @@
         path: "{{ RUN_LOG_FILE }}"
         line: "{{ log_line }}"
 
-
 - name: Make sure ez directory exists
   file:
     path: "{{ ez_dest_dir }}"
@@ -70,25 +69,36 @@
     dest: "{{ ez_dest_file_path }}"
   when: EZ_FILE != ""
 
+# - name: Run easena
+#   environment:
+#     EZ_PATH: "{{ EZ_PATH }}"
+#     PATH: "{{ ansible_env.PATH }}:{{ EZ_PATH }}/bin"
+#   block:
+#     - name: Run easena with .ez file
+#       shell:
+#         cmd: "easena {{ ez_dest_file }} -cuda"
+#         chdir: "{{ ez_dest_dir }}"
+#     - name: Run make
+#       make: 
+#         chdir: "{{ ez_dest_dir }}"
+#     - name: Run generated file
+#       shell:
+#         cmd: "./{{ ez_dest_filename | quote }} > {{ EZ_OUTPUT_FILE | quote }}"
+#         chdir: "{{ ez_dest_dir }}"
+#   rescue:
+#     - name: Stop host from further processing
+#       meta: end_host
+
 - name: Run easena
-  environment:
+  enviroment:
     EZ_PATH: "{{ EZ_PATH }}"
     PATH: "{{ ansible_env.PATH }}:{{ EZ_PATH }}/bin"
-  block:
-    - name: Run easena with .ez file
-      shell:
-        cmd: "easena {{ ez_dest_file }} -cuda"
-        chdir: "{{ ez_dest_dir }}"
-    - name: Run make
-      make: 
-        chdir: "{{ ez_dest_dir }}"
-    - name: Run generated file
-      shell:
-        cmd: "./{{ ez_dest_filename | quote }} > {{ EZ_OUTPUT_FILE | quote }}"
-        chdir: "{{ ez_dest_dir }}"
-  rescue:
-    - name: Stop host from further processing
-      meta: end_host
+  shell: 
+    cmd: |
+      easena "{{ ez_dest_file }}"" --cudas
+      make
+      "./{{ ez_dest_filename | quote }} > {{ EZ_OUTPUT_FILE | quote }}"
+    chdir: "{{ ez_dest_dir }}"
 
 - name: Create local fetch directory
   delegate_to: localhost
