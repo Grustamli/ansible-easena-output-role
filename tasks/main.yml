@@ -90,7 +90,7 @@
 #       meta: end_host
 
 - name: Run easena
-  enviroment:
+  environment:
     EZ_PATH: "{{ EZ_PATH }}"
     PATH: "{{ ansible_env.PATH }}:{{ EZ_PATH }}/bin"
   shell: 
