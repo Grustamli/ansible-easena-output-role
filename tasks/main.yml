@@ -95,9 +95,9 @@
     PATH: "{{ ansible_env.PATH }}:{{ EZ_PATH }}/bin"
   shell: 
     cmd: |
-      easena "{{ ez_dest_file }}"" --cudas
+      easena "{{ ez_dest_file }} {{ EASENA_COMMAND_ARGS | join(' ') }}"
       make
-      "./{{ ez_dest_filename | quote }} > {{ EZ_OUTPUT_FILE | quote }}"
+      "./{{ ez_dest_filename | quote }} {{ COMPILATION_ARGS | join(' ') > {{ EZ_OUTPUT_FILE | quote }}"
     chdir: "{{ ez_dest_dir }}"
 
 - name: Create local fetch directory

@@ -49,6 +49,10 @@ CLEAN_COMPILATION: false
 DELETE_EZ_FILE: false
 RUN_LOG_FILE: run.log
 
+EASENA_COMMAND_ARGS:
+  - --cuda
+COMPILATION_ARGS: []
+
 # Env variables
 EZ_PATH: /usr/local/easena/
 
