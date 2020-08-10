@@ -69,34 +69,14 @@
     dest: "{{ ez_dest_file_path }}"
   when: EZ_FILE != ""
 
-# - name: Run easena
-#   environment:
-#     EZ_PATH: "{{ EZ_PATH }}"
-#     PATH: "{{ ansible_env.PATH }}:{{ EZ_PATH }}/bin"
-#   block:
-#     - name: Run easena with .ez file
-#       shell:
-#         cmd: "easena {{ ez_dest_file }} -cuda"
-#         chdir: "{{ ez_dest_dir }}"
-#     - name: Run make
-#       make: 
-#         chdir: "{{ ez_dest_dir }}"
-#     - name: Run generated file
-#       shell:
-#         cmd: "./{{ ez_dest_filename | quote }} > {{ EZ_OUTPUT_FILE | quote }}"
-#         chdir: "{{ ez_dest_dir }}"
-#   rescue:
-#     - name: Stop host from further processing
-#       meta: end_host
-
 - name: Run easena
   environment:
     EZ_PATH: "{{ EZ_PATH }}"
     PATH: "{{ ansible_env.PATH }}:{{ EZ_PATH }}/bin"
   shell: 
-    cmd: |
-      easena "{{ ez_dest_file }} {{ EASENA_COMMAND_ARGS | join(' ') }}"
-      make
+    cmd: >-
+      easena "{{ ez_dest_file }} {{ EASENA_COMMAND_ARGS | join(' ') }}" &
+      make &
       "./{{ ez_dest_filename | quote }} {{ COMPILATION_ARGS | join(' ') > {{ EZ_OUTPUT_FILE | quote }}"
     chdir: "{{ ez_dest_dir }}"
 
