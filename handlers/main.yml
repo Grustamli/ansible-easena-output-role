@@ -1,0 +1,2 @@
+- name: Logging tasks
+  import_tasks: logging.yml

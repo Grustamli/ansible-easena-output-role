@@ -1,0 +1,27 @@
+- name: new log
+  run_once: true
+  delegate_to: localhost
+  block:
+    - name: Set log line as variable
+      vars:
+        log_values:
+          - "{{ lookup('pipe', 'date \"+%Y-%m-%d %H:%M:%S\"') }}"
+          - "{{ ez_dest_dir }}"
+          - "{{ ez_dest_file }}"
+          - STARTED
+      set_fact:
+        log_line: "{{ ' | '.join(log_values) }}"
+    - name: Append log line
+      lineinfile:
+        path: "{{ RUN_LOG_FILE }}"
+        line: "{{ log_line }}"
+
+
+
+- name: update log
+  delegate_to: localhost
+  run_once: true
+  lineinfile:
+    path: "{{ RUN_LOG_FILE }}"
+    regexp: "^{{ log_line }}"
+    line: "{{ log_line|replace('STARTED', 'FINISHED') }} | {{ local_fetch_dir.path }}"

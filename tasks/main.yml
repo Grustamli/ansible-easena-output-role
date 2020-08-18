@@ -1,14 +1,3 @@
-- run_once: true
-  block:
-  - name: Create unique destination directory prefix
-    delegate_to: localhost
-    command: uuidgen
-    register: uuid_result
-  - name: 
-    set_fact:
-      ez_dest_dir: "{{ uuid_result.stdout }}_{{ ez_dest_filename }}"
-  when: ez_dest_dir is undefined or ez_dest_dir == ''
-
 - name: Ensure run log file exists on localhost
   delegate_to: localhost
   run_once: true
@@ -26,31 +15,29 @@
           - STATUS
           - LOCAL_OUTPUT_FOLDER
           - EZ_DIR_DELETED
+        log_header_line: "{{ ' | '.join(log_fields) }}"
       lineinfile:
         path: "{{ RUN_LOG_FILE }}"
-        # line: "TIMESTAMP | EZ_DEST_FOLDER | EZ_DEST_FILE | STATUS | LOCAL_OUTPUT_FOLDER | "
-        line: "{{ ' | '.join(log_fields) }}"
+        line: "{{ log_header_line }}"
         create: yes
       when: not run_log_file.stat.exists
-
- 
-- name: Handle log line 
-  run_once: true
-  delegate_to: localhost
-  block:
-    - name: Set log line as variable
-      vars:
-        log_values:
-          - "{{ lookup('pipe', 'date \"+%Y-%m-%d %H:%M:%S\"') }}"
-          - "{{ ez_dest_dir }}"
-          - "{{ ez_dest_file }}"
-          - STARTED
+    - name: Set inital job number
       set_fact:
-        log_line: "{{ ' | '.join(log_values) }}"
-    - name: Append log line
-      lineinfile:
-        path: "{{ RUN_LOG_FILE }}"
-        line: "{{ log_line }}"
+        - run_job_no: 0
+      when: not run_log_file.stat.exists
+    - name: Set current jon number
+
+
+- run_once: true
+  block:
+  - name: Create unique destination directory prefix
+    delegate_to: localhost
+    command: uuidgen
+    register: uuid_result
+  - name:
+    set_fact:
+      ez_dest_dir: "{{ uuid_result.stdout }}_{{ ez_dest_filename }}"
+  when: ez_dest_dir is undefined or ez_dest_dir == ''
 
 - name: Make sure ez directory exists
   file:
@@ -118,14 +105,6 @@
     path: "{{ ez_dest_dir }}"
     state: absent
   when: DELETE_EZ_DIRECTORY == true
-
-- name: Update log status
-  delegate_to: localhost
-  run_once: true
-  lineinfile: 
-    path: "{{ RUN_LOG_FILE }}"
-    regexp: "^{{ log_line }}"
-    line: "{{ log_line|replace('STARTED', 'FINISHED') }} | {{ local_fetch_dir.path }}"
 
 
 - import_tasks: clean_history.yml
